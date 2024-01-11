@@ -14,7 +14,6 @@ public class Map implements Serializable {
     private final int[] door;
     Random rand;
     private final long seed;
-    ArrayList<Rome> romes;
 
     public Map(long seed) {
         this.door = new int[2];  // TODO delete this
@@ -34,8 +33,8 @@ public class Map implements Serializable {
         // Generate Map
         fillWithNothing();
 
-        this.romes = Rome.generateRomes(this);  // TODO move this function to Map
-        Rome.connectRomes(this.romes);  // TODO move this function to Map
+        List<Rome> romes = Rome.generateRomes(this);
+        Rome.connectRomes(romes);
         generateDoor();
     }
 
@@ -90,7 +89,7 @@ public class Map implements Serializable {
      */
     int[] initPlayer() {
 
-        int minimumDistance = RandomUtils.uniform(rand, 20, 30);
+        int minimumDistance = RandomUtils.uniform(rand, 30, 40);
         int[] position = new int[2];
         List<int[]> players = new ArrayList<>();
         for (int x = 0; x < Game.WIDTH; x++) {

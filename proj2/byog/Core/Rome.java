@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 public class Rome implements Serializable {
     private static TETile[][] world;
     private static Random rand;
-    final int x1, y1, x2, y2;  // (x1, y1) is the left-bottom point, (x2, y2) is the right-top point
+    // (x1, y1) is the left-bottom point, (x2, y2) is the right-top point
+    final int x1, y1, x2, y2;
     boolean connected;
-    static List<Rome> connectedRomes;
 
     // Rome's minimum&maximum width and height
     static final int MAX_WIDTH = 20, MIN_WIDTH = 8,
@@ -28,7 +28,6 @@ public class Rome implements Serializable {
     static void initialize(TETile[][] tiles, Random randGen) {
         Rome.world = tiles;
         Rome.rand = randGen;
-        Rome.connectedRomes = new ArrayList<>();
     }
 
     public Rome(int leftBottomX, int leftBottomY, int width, int height) {
@@ -142,8 +141,15 @@ public class Rome implements Serializable {
 
     /**
      * connect to other rome only overlapped in x or only overlapped in y
+     *
+     * @param other          other rome, must be in connectedRomes.
+     * @param connectedRomes connected romes and hallways.
+     * @return return true if this rome can connect to other rome with horizontal or vertical
+     * hallway.
+     * if success, add current rome and the hallway to the connectedRomes.
      */
-    private boolean tryConnectToOtherRomeHorizontalOrVertical(Rome other) {
+    private boolean tryConnectToOtherRomeHorizontalOrVertical(Rome other,
+                                                              List<Rome> connectedRomes) {
         int overLapX1 = Math.max(this.x1, other.x1);
         int overLapX2 = Math.min(this.x2, other.x2);
         /* overlapped in x, connect with vertical hallway */
@@ -160,8 +166,8 @@ public class Rome implements Serializable {
                     3,
                     Math.min(Math.abs(this.y2 - other.y1), Math.abs(this.y1 - other.y2)) + 3);
             connected = true;
-            other.connected = true;
-            Rome.connectedRomes.add(verticalHallway);
+            connectedRomes.add(verticalHallway);
+            connectedRomes.add(this);
             verticalHallway.draw();
             return true;
         }
@@ -183,7 +189,8 @@ public class Rome implements Serializable {
                     3);
             connected = true;
             other.connected = true;
-            Rome.connectedRomes.add(horizontalHallway);
+            connectedRomes.add(horizontalHallway);
+            connectedRomes.add(this);
             horizontalHallway.draw();
             return true;
         }
@@ -194,9 +201,13 @@ public class Rome implements Serializable {
     /**
      * try to connect other rome with hallway has turn
      *
-     * @param other other Rome, shouldn't overlapped in x or overlapped in y with current rome
+     * @param other          other Rome, shouldn't overlapped in x or overlapped in y with
+     *                       current rome should be in connectedRomes
+     * @param connectedRomes connected romes and hallways.
+     *                       <p>
+     *                       add hallways and current rome to connectedRomes
      */
-    private void connectToOtherRomeWithHallwayHasTurn(Rome other) {
+    private void connectToOtherRomeWithHallwayHasTurn(Rome other, List<Rome> connectedRomes) {
         int thisCenterX = (this.x1 + this.x2) / 2;
         int thisCenterY = (this.y1 + this.y2) / 2;
         int otherCenterX = (other.x1 + other.x2) / 2;
@@ -223,8 +234,9 @@ public class Rome implements Serializable {
                 3, maxCenterY - minCenterY + 3);
         Rome horizontalHallway = new Rome(minCenterX - 1, otherCenterY - 1,
                 maxCenterX - minCenterX + 3, 3);
-        Rome.connectedRomes.add(verticalHallway);
-        Rome.connectedRomes.add(horizontalHallway);
+        connectedRomes.add(verticalHallway);
+        connectedRomes.add(horizontalHallway);
+        connectedRomes.add(this);
         verticalHallway.draw();
         horizontalHallway.draw();
     }
@@ -238,9 +250,9 @@ public class Rome implements Serializable {
         ArrayList<Rome> romes = new ArrayList<>();
         // make sure there is at least one hallway with turn
         romes.add(Rome.generateRandomRome());
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 50; i++) {  // generate 50 romes at most
             boolean generateSuccess = false;
-            int maxTry = 20;
+            int maxTry = 100;
             //  try to generate rome in no more than maxTry times
             for (int j = 0; j < maxTry; j++) {
                 Rome newRome = Rome.generateRandomRome();
@@ -272,32 +284,39 @@ public class Rome implements Serializable {
      * Connect romes in the arrayList
      */
     public static void connectRomes(List<Rome> romes) {
+        List<Rome> connectedRomes = new ArrayList<>();  // will include the hallway between rooms
         List<Rome> notConnectedRomes = new ArrayList<>(romes);
 
         Rome firstRome = notConnectedRomes.get(0);
         notConnectedRomes.remove(0);
         firstRome.connected = true;
-        Rome.connectedRomes.add(firstRome);
+        connectedRomes.add(firstRome);
 
         for (Rome notConnectedRome : notConnectedRomes) {
             if (notConnectedRome.isConnected()) {
-                Rome.connectedRomes.add(notConnectedRome);
+                // the rome is connected already by the connect operations of other romes.
+                connectedRomes.add(notConnectedRome);
                 continue;
             }
-            // sorted by the distance to the notConnectedRome
-            List<Rome> sortedConnectedRomes = Rome.connectedRomes.stream()
+
+            // sorted the connectedRomes by the distance to the notConnectedRome
+            List<Rome> sortedConnectedRomes = connectedRomes.stream()
                     .sorted(Comparator.comparingInt((Rome rome) -> rome.distance(notConnectedRome)))
                     .collect(Collectors.toList());
+
+            // try to connect other rome with horizontal or vertical hallway
             for (Rome connectedRome : sortedConnectedRomes) {
-                if (notConnectedRome.tryConnectToOtherRomeHorizontalOrVertical(connectedRome)) {
-                    Rome.connectedRomes.add(notConnectedRome);
+                if (notConnectedRome.tryConnectToOtherRomeHorizontalOrVertical(connectedRome,
+                        connectedRomes)) {
                     break;
                 }
             }
-            // connect to the nearest room with hallway has turn
+
+            // if current rome can't collect to other rome with horizontal or vertical hallway
+            // then connect to the nearest room with hallway has turn
             if (!notConnectedRome.isConnected()) {
-                notConnectedRome.connectToOtherRomeWithHallwayHasTurn(sortedConnectedRomes.get(0));
-                Rome.connectedRomes.add(notConnectedRome);
+                notConnectedRome.connectToOtherRomeWithHallwayHasTurn(
+                        sortedConnectedRomes.get(0), connectedRomes);
             }
         }
     }
