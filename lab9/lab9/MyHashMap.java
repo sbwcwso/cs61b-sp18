@@ -4,10 +4,10 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- *  A hash table-backed Map implementation. Provides amortized constant time
- *  access to elements via get(), remove(), and put() in the best case.
+ * A hash table-backed Map implementation. Provides amortized constant time
+ * access to elements via get(), remove(), and put() in the best case.
  *
- *  @author Your name here
+ * @author Your name here
  */
 public class MyHashMap<K, V> implements Map61B<K, V> {
 
@@ -35,9 +35,10 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         }
     }
 
-    /** Computes the hash function of the given key. Consists of
-     *  computing the hashcode, followed by modding by the number of buckets.
-     *  To handle negative numbers properly, uses floorMod instead of %.
+    /**
+     * Computes the hash function of the given key. Consists of
+     * computing the hashcode, followed by modding by the number of buckets.
+     * To handle negative numbers properly, uses floorMod instead of %.
      */
     private int hash(K key) {
         if (key == null) {
@@ -53,19 +54,41 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      */
     @Override
     public V get(K key) {
-        throw new UnsupportedOperationException();
+        return buckets[hash(key)].get(key);
+    }
+
+    private void resize(int capacity) {
+        ArrayMap<K, V>[] oldBuckets = buckets;
+
+        buckets = new ArrayMap[capacity];
+        clear();
+
+        for (int i = 0; i < oldBuckets.length; i += 1) {
+            for (K key : oldBuckets[i]) {
+                put(key, oldBuckets[i].get(key));
+            }
+        }
     }
 
     /* Associates the specified value with the specified key in this map. */
     @Override
     public void put(K key, V value) {
-        throw new UnsupportedOperationException();
+        ArrayMap<K, V> targetBucket = buckets[hash(key)];
+        int initTargetBucketSize = targetBucket.size();
+
+        targetBucket.put(key, value);
+        if (initTargetBucketSize < targetBucket.size()) {
+            size += 1;
+            if (loadFactor() > MAX_LF) {
+                resize(buckets.length * 2);
+            }
+        }
     }
 
     /* Returns the number of key-value mappings in this map. */
     @Override
     public int size() {
-        throw new UnsupportedOperationException();
+        return size;
     }
 
     //////////////// EVERYTHING BELOW THIS LINE IS OPTIONAL ////////////////
