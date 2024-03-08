@@ -1,13 +1,13 @@
 package lab11.graphs;
 
 /**
- *  @author Josh Hug
+ * @author Josh Hug
  */
 public class MazeAStarPath extends MazeExplorer {
-    private int s;
-    private int t;
+    private final int s;
+    private final int t;
     private boolean targetFound = false;
-    private Maze maze;
+    private final Maze maze;
 
     public MazeAStarPath(Maze m, int sourceX, int sourceY, int targetX, int targetY) {
         super(m);
@@ -18,20 +18,55 @@ public class MazeAStarPath extends MazeExplorer {
         edgeTo[s] = s;
     }
 
-    /** Estimate of the distance from v to the target. */
+    /**
+     * Estimate of the distance from v to the target.
+     */
     private int h(int v) {
-        return -1;
+        return Math.abs(maze.toX(v) - maze.toX(t)) + Math.abs(maze.toY(v) - maze.toY(t));
     }
 
-    /** Finds vertex estimated to be closest to target. */
+    /**
+     * Finds vertex estimated to be closest to target.
+     */
     private int findMinimumUnmarked() {
-        return -1;
+        int minimumDistance = Integer.MAX_VALUE;
+        int minimumV = t;
+        int size = maze.V();
+        for (int v = 0; v < size; v++) {
+            if (!marked[v] && distTo[v] < Integer.MAX_VALUE) {
+                int estimateDistance = distTo[v] + h(v);
+                if (estimateDistance < minimumDistance) {
+                    minimumDistance = estimateDistance;
+                    minimumV = v;
+                }
+            }
+        }
+        return minimumV;
         /* You do not have to use this method. */
     }
 
-    /** Performs an A star search from vertex s. */
+    /**
+     * Performs an A star search from vertex s.
+     */
     private void astar(int s) {
-        // TODO
+        marked[s] = true;
+        announce();
+
+        if (s == t) {
+            targetFound = true;
+        }
+
+        if (targetFound) {
+            return;
+        }
+
+        for (int w : maze.adj(s)) {
+            if (!marked[w]) {
+                edgeTo[w] = s;
+                distTo[w] = distTo[s] + 1;
+            }
+        }
+        astar(findMinimumUnmarked());
     }
 
     @Override
