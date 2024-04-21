@@ -1,7 +1,10 @@
 import com.google.gson.Gson;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,7 +39,7 @@ public class MapServer {
      * Longitude == x-axis; latitude == y-axis.
      */
     public static final double ROOT_ULLAT = 37.892195547244356, ROOT_ULLON = -122.2998046875,
-            ROOT_LRLAT = 37.82280243352756, ROOT_LRLON = -122.2119140625;
+        ROOT_LRLAT = 37.82280243352756, ROOT_LRLON = -122.2119140625;
     /**
      * Each tile is 256x256 pixels.
      */
@@ -70,23 +73,27 @@ public class MapServer {
      * lrlat : lower right corner latitude,<br> lrlon : lower right corner longitude <br>
      * w : user viewport window width in pixels,<br> h : user viewport height in pixels.
      **/
-    private static final String[] REQUIRED_RASTER_REQUEST_PARAMS = {"ullat", "ullon", "lrlat",
-            "lrlon", "w", "h"};
+    private static final String[] REQUIRED_RASTER_REQUEST_PARAMS = {
+        "ullat", "ullon", "lrlat", "lrlon", "w", "h"
+    };
     /**
      * Each route request to the server will have the following parameters
      * as keys in the params map.<br>
      * start_lat : start point latitude,<br> start_lon : start point longitude,<br>
      * end_lat : end point latitude, <br>end_lon : end point longitude.
      **/
-    private static final String[] REQUIRED_ROUTE_REQUEST_PARAMS = {"start_lat", "start_lon",
-            "end_lat", "end_lon"};
+    private static final String[] REQUIRED_ROUTE_REQUEST_PARAMS = {
+        "start_lat", "start_lon", "end_lat", "end_lon"
+    };
 
     /**
      * The result of rastering must be a map containing all of the
      * fields listed in the comments for getMapRaster in Rasterer.java.
      **/
-    private static final String[] REQUIRED_RASTER_RESULT_PARAMS = {"render_grid", "raster_ul_lon",
-            "raster_ul_lat", "raster_lr_lon", "raster_lr_lat", "depth", "query_success"};
+    private static final String[] REQUIRED_RASTER_RESULT_PARAMS = {
+        "render_grid", "raster_ul_lon", "raster_ul_lat",
+        "raster_lr_lon", "raster_lr_lat", "depth", "query_success"
+    };
 
     private static Rasterer rasterer;
     private static GraphDB graph;
@@ -119,7 +126,7 @@ public class MapServer {
          * the request handlers. */
         get("/raster", (req, res) -> {
             HashMap<String, Double> params =
-                    getRequestParams(req, REQUIRED_RASTER_REQUEST_PARAMS);
+                getRequestParams(req, REQUIRED_RASTER_REQUEST_PARAMS);
             /* The png image is written to the ByteArrayOutputStream */
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             /* getMapRaster() does almost all the work for this API call */
@@ -141,9 +148,9 @@ public class MapServer {
         /* Define the routing endpoint for HTTP GET requests. */
         get("/route", (req, res) -> {
             HashMap<String, Double> params =
-                    getRequestParams(req, REQUIRED_ROUTE_REQUEST_PARAMS);
+                getRequestParams(req, REQUIRED_ROUTE_REQUEST_PARAMS);
             route = Router.shortestPath(graph, params.get("start_lon"), params.get("start_lat"),
-                    params.get("end_lon"), params.get("end_lat"));
+                params.get("end_lon"), params.get("end_lat"));
             String directions = getDirectionsText();
             Map<String, Object> routeParams = new HashMap<>();
             routeParams.put("routing_success", !route.isEmpty());
@@ -191,7 +198,7 @@ public class MapServer {
      * @return A populated map of input parameter to it's numerical value.
      */
     private static HashMap<String, Double> getRequestParams(
-            spark.Request req, String[] requiredParams) {
+        spark.Request req, String[] requiredParams) {
         Set<String> reqParams = req.queryParams();
         HashMap<String, Double> params = new HashMap<>();
         for (String param : requiredParams) {
@@ -221,7 +228,7 @@ public class MapServer {
         int numHorizTiles = renderGrid[0].length;
 
         BufferedImage img = new BufferedImage(numHorizTiles * MapServer.TILE_SIZE,
-                numVertTiles * MapServer.TILE_SIZE, BufferedImage.TYPE_INT_RGB);
+            numVertTiles * MapServer.TILE_SIZE, BufferedImage.TYPE_INT_RGB);
         Graphics graphic = img.getGraphics();
         int x = 0, y = 0;
 
@@ -248,12 +255,12 @@ public class MapServer {
             Graphics2D g2d = (Graphics2D) graphic;
             g2d.setColor(MapServer.ROUTE_STROKE_COLOR);
             g2d.setStroke(new BasicStroke(MapServer.ROUTE_STROKE_WIDTH_PX,
-                    BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             route.stream().reduce((v, w) -> {
                 g2d.drawLine((int) ((graph.lon(v) - ullon) * (1 / wdpp)),
-                        (int) ((ullat - graph.lat(v)) * (1 / hdpp)),
-                        (int) ((graph.lon(w) - ullon) * (1 / wdpp)),
-                        (int) ((ullat - graph.lat(w)) * (1 / hdpp)));
+                    (int) ((ullat - graph.lat(v)) * (1 / hdpp)),
+                    (int) ((graph.lon(w) - ullon) * (1 / wdpp)),
+                    (int) ((ullat - graph.lat(w)) * (1 / hdpp)));
                 return w;
             });
         }

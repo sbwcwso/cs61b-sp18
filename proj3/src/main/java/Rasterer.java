@@ -50,8 +50,8 @@ public class Rasterer {
         }
 
         // check if query is out of scope
-        if (!((ullon < MapServer.ROOT_LRLON && lrlon > MapServer.ROOT_ULLON) &&
-                (ullat > MapServer.ROOT_LRLAT && lrlat < MapServer.ROOT_ULLAT))) {
+        if (!((ullon < MapServer.ROOT_LRLON && lrlon > MapServer.ROOT_ULLON)
+                && (ullat > MapServer.ROOT_LRLAT && lrlat < MapServer.ROOT_ULLAT))) {
             querySuccess = false;
             return;
         }
@@ -131,7 +131,6 @@ public class Rasterer {
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
         Map<String, Object> results = new HashMap<>();
-        System.out.println(params);
         handleParams(params);
 
         if (querySuccess) {

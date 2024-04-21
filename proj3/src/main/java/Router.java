@@ -102,9 +102,8 @@ public class Router {
             long next = iterator.next();
             GraphDB.Way nextWay = g.getNode(cur).edges.get(next);
             if (!curWay.name.equals(nextWay.name)) {
-                navigationDirections.add(NavigationDirection.fromString(
-                        direction + " on " + curWay.name + " and continue for " + distance + " " +
-                                "miles."
+                navigationDirections.add(NavigationDirection.fromString(direction + " on "
+                        + curWay.name + " and continue for " + distance + " " + "miles."
                 ));
 
                 double relativeBearing = g.bearing(cur, next) - g.bearing(prev, cur);
@@ -137,9 +136,8 @@ public class Router {
             cur = next;
         }
 
-        navigationDirections.add(NavigationDirection.fromString(
-                direction + " on " + curWay.name + " and continue for " + distance + " " +
-                        "miles."
+        navigationDirections.add(NavigationDirection.fromString(direction + " on "
+                + curWay.name + " and continue for " + distance + " " + "miles."
         ));
 
         return navigationDirections;
