@@ -2,28 +2,30 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
- *  Parses OSM XML files using an XML SAX parser. Used to construct the graph of roads for
- *  pathfinding, under some constraints.
- *  See OSM documentation on
- *  <a href="http://wiki.openstreetmap.org/wiki/Key:highway">the highway tag</a>,
- *  <a href="http://wiki.openstreetmap.org/wiki/Way">the way XML element</a>,
- *  <a href="http://wiki.openstreetmap.org/wiki/Node">the node XML element</a>,
- *  and the java
- *  <a href="https://docs.oracle.com/javase/tutorial/jaxp/sax/parsing.html">SAX parser tutorial</a>.
+ * Parses OSM XML files using an XML SAX parser. Used to construct the graph of roads for
+ * pathfinding, under some constraints.
+ * See OSM documentation on
+ * <a href="http://wiki.openstreetmap.org/wiki/Key:highway">the highway tag</a>,
+ * <a href="http://wiki.openstreetmap.org/wiki/Way">the way XML element</a>,
+ * <a href="http://wiki.openstreetmap.org/wiki/Node">the node XML element</a>,
+ * and the java
+ * <a href="https://docs.oracle.com/javase/tutorial/jaxp/sax/parsing.html">SAX parser tutorial</a>.
+ * <p>
+ * You may find the CSCourseGraphDB and CSCourseGraphDBHandler examples useful.
+ * <p>
+ * The idea here is that some external library is going to walk through the XML
+ * file, and your override method tells Java what to do every time it gets to the next
+ * element in the file. This is a very common but strange-when-you-first-see it pattern.
+ * It is similar to the Visitor pattern we discussed for graphs.
  *
- *  You may find the CSCourseGraphDB and CSCourseGraphDBHandler examples useful.
- *
- *  The idea here is that some external library is going to walk through the XML
- *  file, and your override method tells Java what to do every time it gets to the next
- *  element in the file. This is a very common but strange-when-you-first-see it pattern.
- *  It is similar to the Visitor pattern we discussed for graphs.
- *
- *  @author Alan Yao, Maurice Lee
+ * @author Alan Yao, Maurice Lee
  */
 public class GraphBuildingHandler extends DefaultHandler {
     /**
@@ -38,9 +40,13 @@ public class GraphBuildingHandler extends DefaultHandler {
                     "secondary_link", "tertiary_link"));
     private String activeState = "";
     private final GraphDB g;
+    private GraphDB.Node lastNode;
+    private List<GraphDB.Node> nodesInWay;
+    private GraphDB.Way way;
 
     /**
      * Create a new GraphBuildingHandler.
+     *
      * @param g The graph to populate with the XML data.
      */
     public GraphBuildingHandler(GraphDB g) {
@@ -50,12 +56,15 @@ public class GraphBuildingHandler extends DefaultHandler {
     /**
      * Called at the beginning of an element. Typically, you will want to handle each element in
      * here, and you may want to track the parent element.
-     * @param uri The Namespace URI, or the empty string if the element has no Namespace URI or
-     *            if Namespace processing is not being performed.
-     * @param localName The local name (without prefix), or the empty string if Namespace
-     *                  processing is not being performed.
-     * @param qName The qualified name (with prefix), or the empty string if qualified names are
-     *              not available. This tells us which element we're looking at.
+     *
+     * @param uri        The Namespace URI, or the empty string if the element has no Namespace
+     *                   URI or
+     *                   if Namespace processing is not being performed.
+     * @param localName  The local name (without prefix), or the empty string if Namespace
+     *                   processing is not being performed.
+     * @param qName      The qualified name (with prefix), or the empty string if qualified names
+     *                   are
+     *                   not available. This tells us which element we're looking at.
      * @param attributes The attributes attached to the element. If there are no attributes, it
      *                   shall be an empty Attributes object.
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
@@ -72,37 +81,47 @@ public class GraphBuildingHandler extends DefaultHandler {
 //            System.out.println("Node lon: " + attributes.getValue("lon"));
 //            System.out.println("Node lat: " + attributes.getValue("lat"));
 
-            /* TODO Use the above information to save a "node" to somewhere. */
-            /* Hint: A graph-like structure would be nice. */
-
+            /* save a "node" */
+            long id = Long.parseLong(attributes.getValue("id"));
+            double lat = Double.parseDouble(attributes.getValue("lat"));
+            double lon = Double.parseDouble(attributes.getValue("lon"));
+            GraphDB.Node n = new GraphDB.Node(id, lat, lon);
+            g.addNode(n);
+            lastNode = n;
         } else if (qName.equals("way")) {
             /* We encountered a new <way...> tag. */
             activeState = "way";
+            nodesInWay = new ArrayList<>();
+            way = new GraphDB.Way();
 //            System.out.println("Beginning a way...");
         } else if (activeState.equals("way") && qName.equals("nd")) {
             /* While looking at a way, we found a <nd...> tag. */
             //System.out.println("Id of a node in this way: " + attributes.getValue("ref"));
 
-            /* TODO Use the above id to make "possible" connections between the nodes in this way */
             /* Hint1: It would be useful to remember what was the last node in this way. */
             /* Hint2: Not all ways are valid. So, directly connecting the nodes here would be
             cumbersome since you might have to remove the connections if you later see a tag that
             makes this way invalid. Instead, think of keeping a list of possible connections and
             remember whether this way is valid or not. */
-
+            long id = Long.parseLong(attributes.getValue("ref"));
+            nodesInWay.add(g.getNode(id));
         } else if (activeState.equals("way") && qName.equals("tag")) {
             /* While looking at a way, we found a <tag...> tag. */
             String k = attributes.getValue("k");
             String v = attributes.getValue("v");
             if (k.equals("maxspeed")) {
                 //System.out.println("Max Speed: " + v);
-                /* TODO set the max speed of the "current way" here. */
+                way.maxSpeed = Integer.parseInt(v.split(" ")[0]);
             } else if (k.equals("highway")) {
                 //System.out.println("Highway type: " + v);
-                /* TODO Figure out whether this way and its connections are valid. */
+                /* Figure out whether this way and its connections are valid. */
                 /* Hint: Setting a "flag" is good enough! */
+                if (ALLOWED_HIGHWAY_TYPES.contains(v)) {
+                    way.valid = true;
+                }
             } else if (k.equals("name")) {
                 //System.out.println("Way Name: " + v);
+                way.name = v;
             }
 //            System.out.println("Tag with k=" + k + ", v=" + v + ".");
         } else if (activeState.equals("node") && qName.equals("tag") && attributes.getValue("k")
@@ -113,19 +132,23 @@ public class GraphBuildingHandler extends DefaultHandler {
             node this tag belongs to. Remember XML is parsed top-to-bottom, so probably it's the
             last node that you looked at (check the first if-case). */
 //            System.out.println("Node's name: " + attributes.getValue("v"));
+            String name = attributes.getValue('v');
+            g.addLocation(name, lastNode);
         }
     }
 
     /**
      * Receive notification of the end of an element. You may want to take specific terminating
      * actions here, like finalizing vertices or edges found.
-     * @param uri The Namespace URI, or the empty string if the element has no Namespace URI or
-     *            if Namespace processing is not being performed.
+     *
+     * @param uri       The Namespace URI, or the empty string if the element has no Namespace
+     *                  URI or
+     *                  if Namespace processing is not being performed.
      * @param localName The local name (without prefix), or the empty string if Namespace
      *                  processing is not being performed.
-     * @param qName The qualified name (with prefix), or the empty string if qualified names are
-     *              not available.
-     * @throws SAXException  Any SAX exception, possibly wrapping another exception.
+     * @param qName     The qualified name (with prefix), or the empty string if qualified names are
+     *                  not available.
+     * @throws SAXException Any SAX exception, possibly wrapping another exception.
      */
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
@@ -134,6 +157,14 @@ public class GraphBuildingHandler extends DefaultHandler {
             /* Hint1: If you have stored the possible connections for this way, here's your
             chance to actually connect the nodes together if the way is valid. */
 //            System.out.println("Finishing a way...");
+            if (way.valid) {
+                for (int i = 0; i < nodesInWay.size() - 1; i++) {
+                    GraphDB.Node curNode = nodesInWay.get(i);
+                    GraphDB.Node nextNode = nodesInWay.get(i + 1);
+                    curNode.edges.put(nextNode.id, way);
+                    nextNode.edges.put(curNode.id, way);
+                }
+            }
         }
     }
 
