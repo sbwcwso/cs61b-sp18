@@ -41,9 +41,10 @@ public class Router {
         final Map<Long, Double> dstToStart = new HashMap<>();
         final Map<Long, Long> edgeTo = new HashMap<>();
         final Set<Long> markedNodes = new HashSet<>();
-        final Map<Long, Double> prioritys = new HashMap<>();
+        final Map<Long, Double> priorities = new HashMap<>();
         PriorityQueue<Long> priorityQueue = new PriorityQueue<>(
-                Comparator.comparingDouble(i -> prioritys.getOrDefault(i, Double.MAX_VALUE)));
+            Comparator.comparingDouble(i -> priorities.getOrDefault(i, Double.MAX_VALUE)));
+        List<Long> path = new LinkedList<>();
 
         priorityQueue.add(startNodeId);
         dstToStart.put(startNodeId, 0.0);
@@ -51,6 +52,13 @@ public class Router {
             Long v = priorityQueue.remove();
             markedNodes.add(v);
             if (v == endNodeId) {
+                path.add(endNodeId);
+                long nodeId = endNodeId;
+                while (nodeId != startNodeId) {
+                    nodeId = edgeTo.get(nodeId);
+                    path.add(nodeId);
+                }
+                Collections.reverse(path);
                 break;
             }
             for (Long w : g.adjacent(v)) {
@@ -62,20 +70,11 @@ public class Router {
                 if (startTovTow < startTow) {
                     edgeTo.put(w, v);
                     dstToStart.put(w, startTovTow);
-                    prioritys.put(w, startTovTow + g.distance(w, endNodeId));
+                    priorities.put(w, startTovTow + g.distance(w, endNodeId));
                     priorityQueue.add(w);
                 }
             }
         }
-
-        List<Long> path = new LinkedList<>();
-        path.add(endNodeId);
-        long nodeId = endNodeId;
-        while (nodeId != startNodeId) {
-            nodeId = edgeTo.get(nodeId);
-            path.add(nodeId);
-        }
-        Collections.reverse(path);
         return path;
     }
 
@@ -103,7 +102,7 @@ public class Router {
             GraphDB.Way nextWay = g.getNode(cur).edges.get(next);
             if (!curWay.name.equals(nextWay.name)) {
                 navigationDirections.add(NavigationDirection.fromString(direction + " on "
-                        + curWay.name + " and continue for " + distance + " " + "miles."
+                    + curWay.name + " and continue for " + distance + " " + "miles."
                 ));
 
                 double relativeBearing = g.bearing(cur, next) - g.bearing(prev, cur);
@@ -137,7 +136,7 @@ public class Router {
         }
 
         navigationDirections.add(NavigationDirection.fromString(direction + " on "
-                + curWay.name + " and continue for " + distance + " " + "miles."
+            + curWay.name + " and continue for " + distance + " " + "miles."
         ));
 
         return navigationDirections;
@@ -212,7 +211,7 @@ public class Router {
 
         public String toString() {
             return String.format("%s on %s and continue for %.3f miles.",
-                    DIRECTIONS[direction], way, distance);
+                DIRECTIONS[direction], way, distance);
         }
 
         /**
@@ -275,8 +274,8 @@ public class Router {
         public boolean equals(Object o) {
             if (o instanceof NavigationDirection) {
                 return direction == ((NavigationDirection) o).direction
-                        && way.equals(((NavigationDirection) o).way)
-                        && distance == ((NavigationDirection) o).distance;
+                    && way.equals(((NavigationDirection) o).way)
+                    && distance == ((NavigationDirection) o).distance;
             }
             return false;
         }
