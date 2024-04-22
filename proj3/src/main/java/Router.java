@@ -59,7 +59,7 @@ public class Router {
                     path.add(nodeId);
                 }
                 Collections.reverse(path);
-                break;
+                return path;
             }
             for (Long w : g.adjacent(v)) {
                 if (markedNodes.contains(w)) {
@@ -75,7 +75,7 @@ public class Router {
                 }
             }
         }
-        return path;
+        return path;  // path doesn't exist, return an empty list.
     }
 
     /**
