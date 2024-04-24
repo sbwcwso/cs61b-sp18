@@ -70,7 +70,8 @@ public class Router {
                 if (startTovTow < startTow) {
                     edgeTo.put(w, v);
                     dstToStart.put(w, startTovTow);
-                    priorities.put(w, startTovTow + g.distance(w, endNodeId) / 2);
+//                    priorities.put(w, startTovTow + Math.abs(g.distance(w, endNodeId) - 0.01));
+                    priorities.put(w, startTovTow + g.distance(w, endNodeId) - 1);
                     priorityQueue.add(w);
                 }
             }
