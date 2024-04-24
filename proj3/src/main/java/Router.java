@@ -70,7 +70,7 @@ public class Router {
                 if (startTovTow < startTow) {
                     edgeTo.put(w, v);
                     dstToStart.put(w, startTovTow);
-                    priorities.put(w, startTovTow + g.distance(w, endNodeId));
+                    priorities.put(w, startTovTow + g.distance(w, endNodeId) / 2);
                     priorityQueue.add(w);
                 }
             }
@@ -89,7 +89,9 @@ public class Router {
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
         List<NavigationDirection> navigationDirections = new LinkedList<>();
-        assert route.size() > 1 : "The size of route must greater than or equal 1";
+        if (route.size() <= 1) {
+            return null;
+        }
         Iterator<Long> iterator = route.iterator();
         long start = iterator.next();
         GraphDB.Way curWay = g.getNode(start).edges.get(route.get(1));

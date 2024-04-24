@@ -36,9 +36,11 @@ public class TestRouter {
         for (int i = 0; i < NUM_TESTS; i++) {
             System.out.println(String.format("Running test: %d", i));
             Map<String, Double> params = testParams.get(i);
+            List<Long> test = Router.shortestPath(graph, -122.29750281124966, 37.830872288051076,
+                -122.27545042598584, 37.8806367585157);
             List<Long> actual = Router.shortestPath(graph,
-                    params.get("start_lon"), params.get("start_lat"),
-                    params.get("end_lon"), params.get("end_lat"));
+                params.get("start_lon"), params.get("start_lat"),
+                params.get("end_lon"), params.get("end_lat"));
             List<Long> expected = expectedResults.get(i);
             assertEquals("Your results did not match the expected results", expected, actual);
         }
