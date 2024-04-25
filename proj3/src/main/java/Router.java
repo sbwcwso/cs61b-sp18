@@ -34,11 +34,11 @@ public class Router {
      * @return A list of node id's in the order visited on the shortest path.
      */
 
-    private static class searchNode {
+    private static class SearchNode {
         final long id;
         final double priority;
 
-        searchNode(long id, double priority) {
+        SearchNode(long id, double priority) {
             this.id = id;
             this.priority = priority;
         }
@@ -55,11 +55,11 @@ public class Router {
         final Map<Long, Long> edgeTo = new HashMap<>();
         final Set<Long> markedNodes = new HashSet<>();
 
-        PriorityQueue<searchNode> priorityQueue = new PriorityQueue<>(
+        PriorityQueue<SearchNode> priorityQueue = new PriorityQueue<>(
             Comparator.comparingDouble(node -> node.priority));
         List<Long> path = new LinkedList<>();
 
-        priorityQueue.add(new searchNode(startNodeId, 0.0));
+        priorityQueue.add(new SearchNode(startNodeId, 0.0));
         dstToStart.put(startNodeId, 0.0);
         while (!priorityQueue.isEmpty()) {
             long v = priorityQueue.remove().id;
@@ -87,7 +87,7 @@ public class Router {
                     edgeTo.put(w, v);
                     dstToStart.put(w, startTovTow);
                     double heuristic = g.distance(w, endNodeId);
-                    priorityQueue.add(new searchNode(w, startTovTow + heuristic));
+                    priorityQueue.add(new SearchNode(w, startTovTow + heuristic));
                 }
             }
         }

@@ -25,7 +25,7 @@ public class GraphDB {
      */
     private final Map<Long, Node> nodes = new HashMap<>();
     private final Map<String, Node> locations = new HashMap<>();
-
+   
     /**
      * A node in the graph
      */
