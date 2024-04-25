@@ -33,23 +33,39 @@ public class Router {
      * @param destlat The latitude of the destination location.
      * @return A list of node id's in the order visited on the shortest path.
      */
+
+    private static class searchNode {
+        final long id;
+        final double priority;
+
+        searchNode(long id, double priority) {
+            this.id = id;
+            this.priority = priority;
+        }
+    }
+
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
+
         long startNodeId = g.closest(stlon, stlat);
         long endNodeId = g.closest(destlon, destlat);
+
 
         final Map<Long, Double> dstToStart = new HashMap<>();
         final Map<Long, Long> edgeTo = new HashMap<>();
         final Set<Long> markedNodes = new HashSet<>();
-        final Map<Long, Double> priorities = new HashMap<>();
-        PriorityQueue<Long> priorityQueue = new PriorityQueue<>(
-            Comparator.comparingDouble(i -> priorities.getOrDefault(i, Double.MAX_VALUE)));
+
+        PriorityQueue<searchNode> priorityQueue = new PriorityQueue<>(
+            Comparator.comparingDouble(node -> node.priority));
         List<Long> path = new LinkedList<>();
 
-        priorityQueue.add(startNodeId);
+        priorityQueue.add(new searchNode(startNodeId, 0.0));
         dstToStart.put(startNodeId, 0.0);
         while (!priorityQueue.isEmpty()) {
-            Long v = priorityQueue.remove();
+            long v = priorityQueue.remove().id;
+            if (markedNodes.contains(v)) {
+                continue;
+            }
             markedNodes.add(v);
             if (v == endNodeId) {
                 path.add(endNodeId);
@@ -70,9 +86,8 @@ public class Router {
                 if (startTovTow < startTow) {
                     edgeTo.put(w, v);
                     dstToStart.put(w, startTovTow);
-//                    priorities.put(w, startTovTow + Math.abs(g.distance(w, endNodeId) - 0.01));
-                    priorities.put(w, startTovTow + g.distance(w, endNodeId) - 1);
-                    priorityQueue.add(w);
+                    double heuristic = g.distance(w, endNodeId);
+                    priorityQueue.add(new searchNode(w, startTovTow + heuristic));
                 }
             }
         }

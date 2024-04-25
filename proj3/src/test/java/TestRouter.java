@@ -36,8 +36,12 @@ public class TestRouter {
         for (int i = 0; i < NUM_TESTS; i++) {
             System.out.println(String.format("Running test: %d", i));
             Map<String, Double> params = testParams.get(i);
-            List<Long> test = Router.shortestPath(graph, -122.29750281124966, 37.830872288051076,
-                -122.27545042598584, 37.8806367585157);
+//            List<Long> test = Router.shortestPath(graph, -122.29750281124966, 37.830872288051076,
+//                -122.27545042598584, 37.8806367585157);
+//            assertEquals(209, test.size());
+//            List<Long> test1 = Router.shortestPath(graph, -122.2843971853635, 37.86306107712938,
+//                -122.27745957654163, 37.834846547015125);
+//            assertEquals(121, test1.size());
             List<Long> actual = Router.shortestPath(graph,
                 params.get("start_lon"), params.get("start_lat"),
                 params.get("end_lon"), params.get("end_lat"));
