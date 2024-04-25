@@ -6,7 +6,10 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,9 +26,10 @@ public class GraphDB {
      * Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc.
      */
-    private final Map<Long, Node> nodes = new HashMap<>();
-    private final Map<String, Node> locations = new HashMap<>();
-   
+    private final Map<Long, Node> nodes;
+    private final Map<Long, String> locations;
+    private final TrieST<String> trieST;
+
     /**
      * A node in the graph
      */
@@ -83,8 +87,18 @@ public class GraphDB {
      * @param name: location name.
      * @param n:    a node.
      */
-    void addLocation(String name, Node n) {
-        locations.put(name, n);
+    void addLocation(long id, String name) {
+        locations.put(id, name);
+        trieST.put(cleanString(name), name);
+    }
+
+    List<String> getLocationsByPrefix(String prefix) {
+        List<String> result = new LinkedList<>();
+        for (String key : trieST.keysWithPrefix(cleanString(prefix))) {
+            result.add(trieST.get(key));
+        }
+        Collections.sort(result);
+        return result;
     }
 
     /**
@@ -94,6 +108,9 @@ public class GraphDB {
      * @param dbPath Path to the XML file to be parsed.
      */
     public GraphDB(String dbPath) {
+        nodes = new HashMap<>();
+        locations = new HashMap<>();
+        trieST = new TrieST<>();
         try {
             File inputFile = new File(dbPath);
             FileInputStream inputStream = new FileInputStream(inputFile);

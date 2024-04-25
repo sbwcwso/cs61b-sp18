@@ -35,9 +35,9 @@ public class GraphBuildingHandler extends DefaultHandler {
      * actually drive on them.
      */
     private static final Set<String> ALLOWED_HIGHWAY_TYPES = new HashSet<>(Arrays.asList
-            ("motorway", "trunk", "primary", "secondary", "tertiary", "unclassified",
-                    "residential", "living_street", "motorway_link", "trunk_link", "primary_link",
-                    "secondary_link", "tertiary_link"));
+        ("motorway", "trunk", "primary", "secondary", "tertiary", "unclassified",
+            "residential", "living_street", "motorway_link", "trunk_link", "primary_link",
+            "secondary_link", "tertiary_link"));
     private String activeState = "";
     private final GraphDB g;
     private GraphDB.Node lastNode;
@@ -72,7 +72,7 @@ public class GraphBuildingHandler extends DefaultHandler {
      */
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes)
-            throws SAXException {
+        throws SAXException {
         /* Some example code on how you might begin to parse XML files. */
         if (qName.equals("node")) {
             /* We encountered a new <node...> tag. */
@@ -125,15 +125,15 @@ public class GraphBuildingHandler extends DefaultHandler {
             }
 //            System.out.println("Tag with k=" + k + ", v=" + v + ".");
         } else if (activeState.equals("node") && qName.equals("tag") && attributes.getValue("k")
-                .equals("name")) {
+            .equals("name")) {
             /* While looking at a node, we found a <tag...> with k="name". */
             /* TODO Create a location. */
             /* Hint: Since we found this <tag...> INSIDE a node, we should probably remember which
             node this tag belongs to. Remember XML is parsed top-to-bottom, so probably it's the
             last node that you looked at (check the first if-case). */
 //            System.out.println("Node's name: " + attributes.getValue("v"));
-            String name = attributes.getValue('v');
-            g.addLocation(name, lastNode);
+            String name = attributes.getValue("v");
+            g.addLocation(lastNode.id, name);
         }
     }
 
