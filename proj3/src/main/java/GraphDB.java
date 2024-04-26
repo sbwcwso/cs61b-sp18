@@ -6,6 +6,7 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +30,7 @@ public class GraphDB {
      * creating helper classes, e.g. Node, Edge, etc.
      */
     private final Map<Long, Node> nodes = new HashMap<>();
-    private final TrieST<List<Map<String, Object>>> trieST = new TrieST<>();
+    private final TrieST<TrieNode> trieST = new TrieST<>();
 
     /**
      * A node in the graph
@@ -64,6 +65,14 @@ public class GraphDB {
     }
 
     /**
+     * A node in the trie tree
+     */
+    static class TrieNode {
+        final List<String> names = new ArrayList<>();
+        final List<Map<String, Object>> locations = new LinkedList<>();
+    }
+
+    /**
      * Add a node to the graph
      *
      * @param n Node
@@ -84,9 +93,6 @@ public class GraphDB {
 
     /**
      * Add a location
-     *
-     * @param name: location name.
-     * @param n:    a node.
      */
     void addLocation(long id, String name, double lat, double lon) {
         String cleanName = cleanString(name);
@@ -96,31 +102,39 @@ public class GraphDB {
         location.put("id", id);
         location.put("name", name);
 
-        List<Map<String, Object>> values = trieST.get(cleanName);
-        if (values == null) {
-            values = new LinkedList<>();
-            trieST.put(cleanName, values);
+        TrieNode trieNode = trieST.get(cleanName);
+        if (trieNode == null) {
+            trieNode = new TrieNode();
+            trieST.put(cleanName, trieNode);
         }
-        values.add(location);
+        trieNode.names.add(name);
+        trieNode.locations.add(location);
+    }
+
+    /**
+     * Remove redundant name in the TrieNode of TrieST and sorted them
+     */
+    private void removeRedundantNameAndSortIt() {
+        for (String key : trieST.keys()) {
+            List<String> name = trieST.get(key).names;
+            Set<String> nameSet = new HashSet<>(name);
+            name.clear();
+            name.addAll(nameSet);
+            Collections.sort(name);
+        }
     }
 
     List<String> getLocationsByPrefix(String prefix) {
         List<String> result = new LinkedList<>();
         for (String key : trieST.keysWithPrefix(cleanString(prefix))) {
-            List<Map<String, Object>> locations = trieST.get(key);
-            Set<String> names = new HashSet<>();
-            for (Map<String, Object> location : locations) {
-                names.add((String) location.get("name"));
-            }
-            result.addAll(names);
+            result.addAll(trieST.get(key).names);
         }
-        Collections.sort(result);
         return result;
     }
 
 
     List<Map<String, Object>> getLocations(String locationName) {
-        return trieST.get(cleanString(locationName));
+        return trieST.get(cleanString(locationName)).locations;
     }
 
     /**
@@ -139,10 +153,11 @@ public class GraphDB {
             SAXParser saxParser = factory.newSAXParser();
             GraphBuildingHandler gbh = new GraphBuildingHandler(this);
             saxParser.parse(inputStream, gbh);
+            clean();
+            removeRedundantNameAndSortIt();
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
-        clean();
     }
 
     /**
