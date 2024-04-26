@@ -133,7 +133,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             last node that you looked at (check the first if-case). */
 //            System.out.println("Node's name: " + attributes.getValue("v"));
             String name = attributes.getValue("v");
-            g.addLocation(lastNode.id, name);
+            g.addLocation(lastNode.id, name, lastNode.lat, lastNode.lon);
         }
     }
 

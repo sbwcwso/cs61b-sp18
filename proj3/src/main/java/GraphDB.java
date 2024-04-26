@@ -8,9 +8,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -26,9 +28,8 @@ public class GraphDB {
      * Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc.
      */
-    private final Map<Long, Node> nodes;
-    private final Map<Long, String> locations;
-    private final TrieST<String> trieST;
+    private final Map<Long, Node> nodes = new HashMap<>();
+    private final TrieST<List<Map<String, Object>>> trieST = new TrieST<>();
 
     /**
      * A node in the graph
@@ -87,18 +88,39 @@ public class GraphDB {
      * @param name: location name.
      * @param n:    a node.
      */
-    void addLocation(long id, String name) {
-        locations.put(id, name);
-        trieST.put(cleanString(name), name);
+    void addLocation(long id, String name, double lat, double lon) {
+        String cleanName = cleanString(name);
+        Map<String, Object> location = new HashMap<>();
+        location.put("lat", lat);
+        location.put("lon", lon);
+        location.put("id", id);
+        location.put("name", name);
+
+        List<Map<String, Object>> values = trieST.get(cleanName);
+        if (values == null) {
+            values = new LinkedList<>();
+            trieST.put(cleanName, values);
+        }
+        values.add(location);
     }
 
     List<String> getLocationsByPrefix(String prefix) {
         List<String> result = new LinkedList<>();
         for (String key : trieST.keysWithPrefix(cleanString(prefix))) {
-            result.add(trieST.get(key));
+            List<Map<String, Object>> locations = trieST.get(key);
+            Set<String> names = new HashSet<>();
+            for (Map<String, Object> location : locations) {
+                names.add((String) location.get("name"));
+            }
+            result.addAll(names);
         }
         Collections.sort(result);
         return result;
+    }
+
+
+    List<Map<String, Object>> getLocations(String locationName) {
+        return trieST.get(cleanString(locationName));
     }
 
     /**
@@ -108,9 +130,6 @@ public class GraphDB {
      * @param dbPath Path to the XML file to be parsed.
      */
     public GraphDB(String dbPath) {
-        nodes = new HashMap<>();
-        locations = new HashMap<>();
-        trieST = new TrieST<>();
         try {
             File inputFile = new File(dbPath);
             FileInputStream inputStream = new FileInputStream(inputFile);
