@@ -31,6 +31,7 @@ public class GraphDB {
      */
     private final Map<Long, Node> nodes = new HashMap<>();
     private final TrieST<TrieNode> trieST = new TrieST<>();
+    private final Map<String, List<String>> prefixCache = new HashMap<>();
 
     /**
      * A node in the graph
@@ -125,11 +126,15 @@ public class GraphDB {
     }
 
     List<String> getLocationsByPrefix(String prefix) {
-        List<String> result = new LinkedList<>();
-        for (String key : trieST.keysWithPrefix(cleanString(prefix))) {
-            result.addAll(trieST.get(key).names);
+        String cleanPrefix = cleanString(prefix);
+        if (!prefixCache.containsKey(cleanPrefix)) {
+            List<String> result = new LinkedList<>();
+            for (String key : trieST.keysWithPrefix(cleanString(prefix))) {
+                result.addAll(trieST.get(key).names);
+            }
+            prefixCache.put(cleanPrefix, result);
         }
-        return result;
+        return prefixCache.get(cleanPrefix);
     }
 
 
