@@ -1,8 +1,10 @@
+import java.util.Arrays;
+import java.util.IntSummaryStatistics;
+
 /**
  * Class with 2 ways of doing Counting sort, one naive way and one "better" way
  *
  * @author Akhil Batra, Alexander Hwang
- *
  **/
 public class CountingSort {
     /**
@@ -66,7 +68,10 @@ public class CountingSort {
      * @param arr int array that will be sorted
      */
     public static int[] betterCountingSort(int[] arr) {
-        // TODO make counting sort work with arrays containing negative numbers.
+        // make counting sort work with arrays containing negative numbers.
+        IntSummaryStatistics stats = Arrays.stream(arr).summaryStatistics();
+        int min = stats.getMin();
+        int max = stats.getMax();
         return null;
     }
 }

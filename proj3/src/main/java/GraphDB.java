@@ -33,6 +33,7 @@ public class GraphDB {
     private final TrieST<TrieNode> trieST = new TrieST<>();
     private final Map<String, List<String>> prefixCache = new HashMap<>();
 
+
     /**
      * A node in the graph
      */
@@ -132,7 +133,7 @@ public class GraphDB {
             for (String key : trieST.keysWithPrefix(cleanString(prefix))) {
                 result.addAll(trieST.get(key).names);
             }
-            prefixCache.put(cleanPrefix, result);
+            prefixCache.put(cleanPrefix, Collections.unmodifiableList(result));
         }
         return prefixCache.get(cleanPrefix);
     }
