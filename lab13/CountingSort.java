@@ -72,6 +72,22 @@ public class CountingSort {
         IntSummaryStatistics stats = Arrays.stream(arr).summaryStatistics();
         int min = stats.getMin();
         int max = stats.getMax();
-        return null;
+        // gather all the counts for each value between min and max
+        int[] counts = new int[max - min + 1];
+        for (int i : arr) {
+            counts[i - min]++;
+        }
+
+        // when dealing with ints, we can just put each value
+        // count number of times into the new array
+        int[] sorted = new int[arr.length];
+        int k = 0;
+        for (int i = 0; i < counts.length; i += 1) {
+            for (int j = 0; j < counts[i]; j += 1, k += 1) {
+                sorted[k] = i + min;
+            }
+        }
+
+        return sorted;
     }
 }
