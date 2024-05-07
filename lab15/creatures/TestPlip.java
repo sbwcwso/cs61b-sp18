@@ -1,16 +1,23 @@
 package creatures;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import java.util.HashMap;
-import java.awt.Color;
-import huglife.Direction;
-import huglife.Action;
-import huglife.Occupant;
-import huglife.Impassible;
-import huglife.Empty;
 
-/** Tests the plip class   
- *  @authr FIXME
+import huglife.Action;
+import huglife.Direction;
+import huglife.Empty;
+import huglife.Impassible;
+import huglife.Occupant;
+import org.junit.Test;
+
+import java.awt.Color;
+import java.util.HashMap;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Tests the plip class
+ *
+ * @authr sbwcwso
  */
 
 public class TestPlip {
@@ -36,10 +43,14 @@ public class TestPlip {
 
     @Test
     public void testReplicate() {
-
+        Plip p = new Plip(2);
+        Plip child = p.replicate();
+        assertNotSame(p, child);
+        assertEquals(1.0, p.energy(), 0.0001);
+        assertEquals(1.0, child.energy(), 0.0001);
     }
 
-    //@Test
+    @Test
     public void testChoose() {
         Plip p = new Plip(1.2);
         HashMap<Direction, Occupant> surrounded = new HashMap<Direction, Occupant>();
@@ -50,15 +61,34 @@ public class TestPlip {
 
         //You can create new empties with new Empty();
         //Despite what the spec says, you cannot test for Cloruses nearby yet.
-        //Sorry!  
+        //Sorry!
 
         Action actual = p.chooseAction(surrounded);
         Action expected = new Action(Action.ActionType.STAY);
 
         assertEquals(expected, actual);
+
+        surrounded.put(Direction.RIGHT, new Empty());
+        actual = p.chooseAction(surrounded);
+        assertEquals(Action.ActionType.REPLICATE, actual.type);
+        assertEquals(Direction.RIGHT, actual.dir);
+
+        int tryTimes = 100;
+        boolean success = false;
+        for (int i = 0; i < tryTimes; i++) {
+            surrounded.put(Direction.LEFT, new Clorus(1.0));
+            p = new Plip(0.8);
+            actual = p.chooseAction(surrounded);
+            if (actual.type.equals(Action.ActionType.MOVE)) {
+                assertEquals(Direction.RIGHT, actual.dir);
+                success = true;
+                break;
+            }
+        }
+        assertTrue(success);
     }
 
     public static void main(String[] args) {
         System.exit(jh61b.junit.textui.runClasses(TestPlip.class));
     }
-} 
+}
