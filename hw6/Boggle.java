@@ -1,5 +1,3 @@
-import edu.princeton.cs.algs4.TrieST;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,7 +10,7 @@ public class Boggle {
 
     // File path of dictionary file
     static String dictPath = "words.txt";
-    private static TrieST<String> wordsDict;
+    private static TrieSET wordsDict;
     private static char[][] boardArray;
 
     /**
@@ -54,8 +52,8 @@ public class Boggle {
 
             if (lengthMismatch) {
                 in.close();
-                throw new IllegalArgumentException("Error: Lines in the board file do not have " +
-                    "the same length.");
+                throw new IllegalArgumentException("Error: Lines in the board file do not have "
+                    + "the same length.");
             }
 
             boardArray = new char[lines.size()][];
@@ -67,7 +65,7 @@ public class Boggle {
     }
 
     private static void readWords() {
-        wordsDict = new TrieST<>();
+        wordsDict = new TrieSET();
         In in = new In(dictPath);
         if (!in.exists()) {
             throw new IllegalArgumentException("The dictionary file does not exist.");
@@ -78,7 +76,7 @@ public class Boggle {
                 break;
             }
             words = words.toLowerCase();
-            wordsDict.put(words, words);
+            wordsDict.add(words);
         }
         in.close();
     }
@@ -133,8 +131,12 @@ public class Boggle {
         }
 
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             Position position = (Position) o;
             return x == position.x && y == position.y;
         }
@@ -162,7 +164,7 @@ public class Boggle {
         while (!positions.isEmpty()) {
             Position position = positions.pop();
             String word = position.getWord();
-            if (wordsDict.keysWithPrefix(word).iterator().hasNext()) {
+            if (wordsDict.startsWithPrefix(word)) {
                 for (Position p : position.getNeighbors()) {
                     positions.push(p);
                 }
@@ -210,13 +212,13 @@ public class Boggle {
 
         long startTime, endTime, duration;
         startTime = System.currentTimeMillis();
-        solve(7, "smallBoard2.txt");
+        solve(14, "smallBoard2.txt");
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("smallBoard2： " + duration + " ms");
 
         startTime = System.currentTimeMillis();
-        solve(7, "smallBoard.txt");
+        solve(14, "smallBoard.txt");
         endTime = System.currentTimeMillis();
         duration = endTime - startTime;
         System.out.println("smallBoard： " + duration + " ms");
