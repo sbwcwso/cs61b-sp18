@@ -1,36 +1,10 @@
 /******************************************************************************
- *  Compilation:  javac TrieSET.java
- *  Execution:    java TrieSET < words.txt
- *  Dependencies: StdIn.java
- *  Data files:   https://algs4.cs.princeton.edu/52trie/shellsST.txt
- *
- *  A set for extended ASCII strings, implemented  using a 256-way trie.
- *
- *  Sample client reads in a list of words from standard input and
- *  prints out each word, removing any duplicates.
+ *  A set for strings only contains [a-z], implemented  using a 26-way trie.
  *
  ******************************************************************************/
 
 /**
- * The {@code TrieSET} class represents an ordered set of strings over
- * the extended ASCII alphabet.
- * It supports the usual <em>add</em>, <em>contains</em>, and <em>delete</em>
- * methods. It also provides character-based methods for finding the string
- * in the set that is the <em>longest prefix</em> of a given prefix,
- * finding all strings in the set that <em>start with</em> a given prefix,
- * and finding all strings in the set that <em>match</em> a given pattern.
- * <p>
- * This implementation uses a 26-way trie.
- * The <em>add</em>, <em>contains</em>, <em>delete</em>, and
- * <em>longest prefix</em> methods take time proportional to the length
- * of the key (in the worst case). Construction takes constant time.
- * <p>
- * For additional documentation, see
- * <a href="https://algs4.cs.princeton.edu/52trie">Section 5.2</a> of
- * <i>Algorithms in Java, 4th Edition</i> by Robert Sedgewick and Kevin Wayne.
- *
- * @author Robert Sedgewick
- * @author Kevin Wayne
+ * Modified from https://algs4.cs.princeton.edu/52trie/TrieSET.java.html
  */
 public class TrieSET {
     private static final int R = 26;        // just support a-z
@@ -99,7 +73,9 @@ public class TrieSET {
             x = new Node();
         }
         if (d == key.length()) {
-            if (!x.isString) n++;
+            if (!x.isString) {
+                n++;
+            }
             x.isString = true;
         } else {
             char c = key.charAt(d);
@@ -108,25 +84,6 @@ public class TrieSET {
         }
         return x;
     }
-
-    /**
-     * Returns the number of strings in the set.
-     *
-     * @return the number of strings in the set
-     */
-    public int size() {
-        return n;
-    }
-
-    /**
-     * Is the set empty?
-     *
-     * @return {@code true} if the set is empty, and {@code false} otherwise
-     */
-    public boolean isEmpty() {
-        return size() == 0;
-    }
-
 
     public boolean startsWithPrefix(String prefix) {
         Node x = get(root, prefix, 0);
