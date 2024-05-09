@@ -76,7 +76,9 @@ public class Boggle {
                 break;
             }
             words = words.toLowerCase();
-            wordsDict.add(words);
+            if (words.matches("^[a-z]+$")) {
+                wordsDict.add(words);
+            }
         }
         in.close();
     }
