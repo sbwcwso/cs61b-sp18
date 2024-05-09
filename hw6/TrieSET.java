@@ -63,15 +63,23 @@ public class TrieSET implements Iterable<String> {
      * @throws IllegalArgumentException if {@code key} is {@code null}
      */
     public boolean contains(String key) {
-        if (key == null) throw new IllegalArgumentException("argument to contains() is null");
+        if (key == null) {
+            throw new IllegalArgumentException("argument to contains() is null");
+        }
         Node x = get(root, key, 0);
-        if (x == null) return false;
+        if (x == null) {
+            return false;
+        }
         return x.isString;
     }
 
     private Node get(Node x, String key, int d) {
-        if (x == null) return null;
-        if (d == key.length()) return x;
+        if (x == null) {
+            return null;
+        }
+        if (d == key.length()) {
+            return x;
+        }
         char c = key.charAt(d);
         return get(x.next[c], key, d + 1);
     }
@@ -83,12 +91,16 @@ public class TrieSET implements Iterable<String> {
      * @throws IllegalArgumentException if {@code key} is {@code null}
      */
     public void add(String key) {
-        if (key == null) throw new IllegalArgumentException("argument to add() is null");
+        if (key == null) {
+            throw new IllegalArgumentException("argument to add() is null");
+        }
         root = add(root, key, 0);
     }
 
     private Node add(Node x, String key, int d) {
-        if (x == null) x = new Node();
+        if (x == null) {
+            x = new Node();
+        }
         if (d == key.length()) {
             if (!x.isString) n++;
             x.isString = true;
@@ -149,8 +161,12 @@ public class TrieSET implements Iterable<String> {
     }
 
     private void collect(Node x, StringBuilder prefix, Queue<String> results) {
-        if (x == null) return;
-        if (x.isString) results.enqueue(prefix.toString());
+        if (x == null) {
+            return;
+        }
+        if (x.isString) {
+            results.enqueue(prefix.toString());
+        }
         for (char c = 0; c < R; c++) {
             prefix.append(c);
             collect(x.next[c], prefix, results);
@@ -174,12 +190,16 @@ public class TrieSET implements Iterable<String> {
     }
 
     private void collect(Node x, StringBuilder prefix, String pattern, Queue<String> results) {
-        if (x == null) return;
-        int d = prefix.length();
-        if (d == pattern.length() && x.isString)
-            results.enqueue(prefix.toString());
-        if (d == pattern.length())
+        if (x == null) {
             return;
+        }
+        int d = prefix.length();
+        if (d == pattern.length() && x.isString) {
+            results.enqueue(prefix.toString());
+        }
+        if (d == pattern.length()) {
+            return;
+        }
         char c = pattern.charAt(d);
         if (c == '.') {
             for (char ch = 0; ch < R; ch++) {
@@ -204,10 +224,13 @@ public class TrieSET implements Iterable<String> {
      * @throws IllegalArgumentException if {@code query} is {@code null}
      */
     public String longestPrefixOf(String query) {
-        if (query == null)
+        if (query == null) {
             throw new IllegalArgumentException("argument to longestPrefixOf() is null");
+        }
         int length = longestPrefixOf(root, query, 0, -1);
-        if (length == -1) return null;
+        if (length == -1) {
+            return null;
+        }
         return query.substring(0, length);
     }
 
@@ -216,9 +239,15 @@ public class TrieSET implements Iterable<String> {
     // assuming the first d character match and we have already
     // found a prefix match of the specified length
     private int longestPrefixOf(Node x, String query, int d, int length) {
-        if (x == null) return length;
-        if (x.isString) length = d;
-        if (d == query.length()) return length;
+        if (x == null) {
+            return length;
+        }
+        if (x.isString) {
+            length = d;
+        }
+        if (d == query.length()) {
+            return length;
+        }
         char c = query.charAt(d);
         return longestPrefixOf(x.next[c], query, d + 1, length);
     }
@@ -230,12 +259,16 @@ public class TrieSET implements Iterable<String> {
      * @throws IllegalArgumentException if {@code key} is {@code null}
      */
     public void delete(String key) {
-        if (key == null) throw new IllegalArgumentException("argument to delete() is null");
+        if (key == null) {
+            throw new IllegalArgumentException("argument to delete() is null");
+        }
         root = delete(root, key, 0);
     }
 
     private Node delete(Node x, String key, int d) {
-        if (x == null) return null;
+        if (x == null) {
+            return null;
+        }
         if (d == key.length()) {
             if (x.isString) n--;
             x.isString = false;
@@ -245,10 +278,14 @@ public class TrieSET implements Iterable<String> {
         }
 
         // remove subtrie rooted at x if it is completely empty
-        if (x.isString) return x;
-        for (int c = 0; c < R; c++)
-            if (x.next[c] != null)
+        if (x.isString) {
+            return x;
+        }
+        for (int c = 0; c < R; c++) {
+            if (x.next[c] != null) {
                 return x;
+            }
+        }
         return null;
     }
 

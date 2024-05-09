@@ -159,21 +159,22 @@ public class Boggle {
         for (int x = 0; x < boardArray.length; x++) {
             for (int y = 0; y < boardArray[0].length; y++) {
                 positions.add(new Position("", x, y, new ArrayList<>()));
-            }
-        }
-        while (!positions.isEmpty()) {
-            Position position = positions.pop();
-            String word = position.getWord();
-            if (wordsDict.startsWithPrefix(word)) {
-                for (Position p : position.getNeighbors()) {
-                    positions.push(p);
-                }
-                if (word.length() >= 3 && wordsDict.contains(word) && !words.contains(word)) {
-                    if (words.size() < k) {
-                        words.add(word);
-                    } else if (comparator.compare(word, words.peek()) > 0) {
-                        words.poll();
-                        words.add(word);
+                while (!positions.isEmpty()) {
+                    Position position = positions.pop();
+                    String word = position.getWord();
+                    if (wordsDict.startsWithPrefix(word)) {
+                        for (Position p : position.getNeighbors()) {
+                            positions.push(p);
+                        }
+                        if (word.length() >= 3 && wordsDict.contains(word)
+                            && !words.contains(word)) {
+                            if (words.size() < k) {
+                                words.add(word);
+                            } else if (comparator.compare(word, words.peek()) > 0) {
+                                words.poll();
+                                words.add(word);
+                            }
+                        }
                     }
                 }
             }
@@ -210,6 +211,12 @@ public class Boggle {
             "setbacks", "setback", "ascent", "humane", "smacks");
         org.junit.Assert.assertEquals(excepted, actual);
 
+        dictPath = "trivial_words.txt";
+        actual = solve(20, "exampleBoard2.txt");
+        excepted = Arrays.asList("aaaaa", "aaaa");
+        org.junit.Assert.assertEquals(excepted, actual);
+
+        dictPath = "words.txt";
         long startTime, endTime, duration;
         startTime = System.currentTimeMillis();
         solve(14, "smallBoard2.txt");
