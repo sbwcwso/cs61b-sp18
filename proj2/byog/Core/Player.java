@@ -48,6 +48,15 @@ public class Player implements Serializable {
             this.x = targetX;
             this.y = targetY;
             return false;
+        } else if (targetBlock == Tileset.HEART) {
+            // eat the heart
+            state = "Eat one heart! health +1!";
+            map.world[targetX][targetY] = Tileset.PLAYER;
+            map.world[this.x][this.y] = Tileset.FLOOR;
+            this.x = targetX;
+            this.y = targetY;
+            health += 1;
+            return true;
         } else {
             throw new IllegalArgumentException("Error state.");
         }

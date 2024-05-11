@@ -36,6 +36,8 @@ public class Map implements Serializable {
         List<Rome> romes = Rome.generateRomes(this);
         Rome.connectRomes(romes);
         generateDoor();
+        initItems(Tileset.HEART, 3);
+        initItems(Tileset.Gold, 3);
     }
 
     /**
@@ -54,8 +56,6 @@ public class Map implements Serializable {
 
     /**
      * Find a door of the given tiles
-     *
-     * @param tiles: the generated world
      */
     private void generateDoor() {
 
@@ -96,7 +96,7 @@ public class Map implements Serializable {
             for (int y = 0; y < Game.HEIGHT; y++) {
                 if (world[x][y] == Tileset.FLOOR) {
                     int distance = (x - door[0]) * (x - door[0])
-                            + (y - door[1]) * (y - door[1]);
+                        + (y - door[1]) * (y - door[1]);
                     if (distance > minimumDistance) {
                         players.add(new int[]{x, y});
                     }
@@ -111,6 +111,21 @@ public class Map implements Serializable {
         world[position[0]][position[1]] = Tileset.PLAYER;
 
         return position;
+    }
+
+    /**
+     * init given item of given num in the map
+     */
+    void initItems(TETile type, int num) {
+        int curHeartNum = 0;
+        while (curHeartNum < num) {
+            int x = RandomUtils.uniform(rand, Game.WIDTH);
+            int y = RandomUtils.uniform(rand, Game.HEIGHT);
+            if (world[x][y] == Tileset.FLOOR) {
+                world[x][y] = type;
+                curHeartNum++;
+            }
+        }
     }
 
     /**

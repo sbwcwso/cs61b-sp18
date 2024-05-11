@@ -28,7 +28,7 @@ public class Game {
      */
     private void newGame() {
         long seed = Keyboard.getRandomSeed();
-        player = new Player(5, new Map(seed));
+        player = new Player(3, new Map(seed));
     }
 
 
