@@ -11,18 +11,16 @@ import java.util.Random;
 
 public class Map implements Serializable {
     private static final long serialVersionUID = 121212121212L;
-    final transient TETile[][] world;  // may change in other class
-    private final int[] door;
-    final Random rand;
-
-    final List<int[]> monsters;
+    transient TETile[][] world;  // may change in other class
+    private int[] door;
+    long seed;
+    Random rand;
+    List<int[]> monsters;
 
     public Map(long seed) {
         this.door = new int[2];
+        this.seed = seed;
 
-        rand = new Random(seed);
-        world = new TETile[Game.WIDTH][Game.HEIGHT];
-        monsters = new ArrayList<>();
         initialize();
     }
 
@@ -31,6 +29,9 @@ public class Map implements Serializable {
      */
     void initialize() {
 
+        rand = new Random(seed);
+        world = new TETile[Game.WIDTH][Game.HEIGHT];
+        monsters = new ArrayList<>();
 
         Rome.initialize(world, rand);
         // Generate Map

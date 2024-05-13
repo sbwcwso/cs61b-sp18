@@ -17,8 +17,8 @@ public class Game {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 60;
     public static final int BLANK_DISTANCE = 2;
-    public static int DIAMOND_NUM = 5;
-    public static int HEART_NUM = 3;
+    static int DIAMOND_NUM = 5;
+    static int HEART_NUM = 3;
 
     Player player;
 
