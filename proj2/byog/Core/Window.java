@@ -111,15 +111,26 @@ public class Window {
         StdDraw.textLeft(2, Game.HEIGHT - 1, leftText);
 
         StringBuilder rightText = new StringBuilder();
+        if (Game.DIAMOND_NUM > 0) {
+            rightText.append(Game.DIAMOND_NUM).append(" diamonds need to be " +
+                "collected.         ");
+        } else {
+            rightText.append("You have collected all the diamonds, go to the door to win the " +
+                "game!          ");
+        }
+
         int health = player.health;
         rightText.append("Health: ");
         for (int i = 0; i < health; i++) {
             rightText.append("❤");
         }
+
+        StdDraw.setPenColor(StdDraw.YELLOW);
         StdDraw.textRight(Game.WIDTH - 2, Game.HEIGHT - 1, rightText.toString());
 
         String middleText = player.state;
-        StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT - 1, middleText);
+        StdDraw.setPenColor(StdDraw.BLUE);
+        StdDraw.text(Game.WIDTH / 2.0 - 10, Game.HEIGHT - 1, middleText);
 
         StdDraw.show();
     }

@@ -17,6 +17,8 @@ public class Game {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 60;
     public static final int BLANK_DISTANCE = 2;
+    public static int DIAMOND_NUM = 5;
+    public static int HEART_NUM = 3;
 
     Player player;
 
@@ -50,7 +52,15 @@ public class Game {
                     throw new IllegalArgumentException("Illegal input.");
                 }
             }
-        } while (movePlayer(ch));
+
+            if (!movePlayer(ch)) {
+                break;
+            } else {
+                Window.updateHUD(player);
+                player.map.monstersMove(player);
+                Window.updateHUD(player);
+            }
+        } while (true);
         player.map.showMap();
         Window.endMenu(player);
     }

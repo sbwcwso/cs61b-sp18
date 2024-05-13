@@ -34,7 +34,8 @@ public class Tileset {
     public static final TETile MOUNTAIN = new TETile('▲', Color.gray, Color.black, "mountain");
     public static final TETile TREE = new TETile('♠', Color.green, Color.black, "tree");
     public static final TETile HEART = new TETile('♥', Color.red, Color.black, "heart");
-    public static final TETile Gold = new TETile('◆', Color.yellow, Color.black, "gold");
+    public static final TETile DIAMOND = new TETile('◆', Color.yellow, Color.black, "diamond");
+    public static final TETile MONSTER = new TETile('☠', Color.black, Color.red, "monster");
 }
 
 

@@ -43,11 +43,17 @@ public class Player implements Serializable {
             return health > 0;
         } else if (targetBlock == Tileset.LOCKED_DOOR) {
             // move to the door
-            map.world[targetX][targetY] = Tileset.UNLOCKED_DOOR;
-            map.world[this.x][this.y] = Tileset.FLOOR;
-            this.x = targetX;
-            this.y = targetY;
-            return false;
+            if (Game.DIAMOND_NUM == 0) {
+                map.world[targetX][targetY] = Tileset.UNLOCKED_DOOR;
+                map.world[this.x][this.y] = Tileset.FLOOR;
+                this.x = targetX;
+                this.y = targetY;
+                return false;
+            } else {
+                state = "You need collect all the diamonds to get into the door! Go to find them!";
+                return true;
+            }
+
         } else if (targetBlock == Tileset.HEART) {
             // eat the heart
             state = "Eat one heart! health +1!";
@@ -56,6 +62,22 @@ public class Player implements Serializable {
             this.x = targetX;
             this.y = targetY;
             health += 1;
+            return true;
+        } else if (targetBlock == Tileset.DIAMOND) {
+            state = "Collect one diamond!";
+            map.world[targetX][targetY] = Tileset.PLAYER;
+            map.world[this.x][this.y] = Tileset.FLOOR;
+            this.x = targetX;
+            this.y = targetY;
+            Game.DIAMOND_NUM--;
+            return true;
+        } else if (targetBlock == Tileset.MONSTER) {
+            state = "Attack a monster, lose 1 health!";
+            map.world[targetX][targetY] = Tileset.PLAYER;
+            map.world[this.x][this.y] = Tileset.FLOOR;
+            health -= 1;
+            this.x = targetX;
+            this.y = targetY;
             return true;
         } else {
             throw new IllegalArgumentException("Error state.");
