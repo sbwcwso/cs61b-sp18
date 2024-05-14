@@ -5,6 +5,7 @@ import byog.TileEngine.Tileset;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -12,10 +13,13 @@ import java.util.Random;
 public class Map implements Serializable {
     private static final long serialVersionUID = 121212121212L;
     transient TETile[][] world;  // may change in other class
+    transient TETile[][] visibleWorld;  // may change in other class
     private int[] door;
     long seed;
     Random rand;
     List<int[]> monsters;
+    List<int[]> diamonds;
+    List<int[]> hearts;
 
     public Map(long seed) {
         this.door = new int[2];
@@ -35,24 +39,50 @@ public class Map implements Serializable {
 
         Rome.initialize(world, rand);
         // Generate Map
-        fillWithNothing();
+        fillWithNothing(world);
 
         List<Rome> romes = Rome.generateRomes(this);
         Rome.connectRomes(romes);
         generateDoor();
-        initItems(Tileset.HEART, Game.HEART_NUM);
-        initItems(Tileset.DIAMOND, Game.DIAMOND_NUM);
+        hearts = initItems(Tileset.HEART, Game.HEART_NUM);
+        diamonds = initItems(Tileset.DIAMOND, Game.DIAMOND_NUM);
+    }
+
+    void removeMonsters(int[] position) {
+        removeFromList(monsters, position);
+    }
+
+    void removeHeart(int[] position) {
+        removeFromList(hearts, position);
+    }
+
+    void removeDiamond(int[] position) {
+        removeFromList(diamonds, position);
+    }
+
+    private void removeFromList(List<int[]> list, int[] position) {
+        for (Iterator<int[]> it = list.iterator(); it.hasNext(); ) {
+            int[] item = it.next();
+            if (Arrays.equals(item, position)) {
+                it.remove();
+                break;
+            }
+        }
+    }
+
+    int diamondNum() {
+        return diamonds.size();
     }
 
     /**
      * Fills the given 2D array of tiles with NOTHING.
      */
-    private void fillWithNothing() {
-        int height = world[0].length;
-        int width = world.length;
+    private void fillWithNothing(TETile[][] board) {
+        int height = board[0].length;
+        int width = board.length;
         for (int x = 0; x < width; x += 1) {
             for (int y = 0; y < height; y += 1) {
-                world[x][y] = Tileset.NOTHING;
+                board[x][y] = Tileset.NOTHING;
             }
         }
     }
@@ -100,31 +130,28 @@ public class Map implements Serializable {
     }
 
     /**
-     * init player in the map, and make sure the player is not too close to the door.
+     * init player in the map, and make sure the player is at the longest linear distance from
+     * the door.
      */
     int[] initPlayer() {
 
-        int minimumDistance = RandomUtils.uniform(rand, 30, 40);
+        int maxDistance = 0;
         int[] position = new int[2];
-        List<int[]> players = new ArrayList<>();
         for (int x = 0; x < Game.WIDTH; x++) {
             for (int y = 0; y < Game.HEIGHT; y++) {
                 if (world[x][y] == Tileset.FLOOR) {
                     int distance = (x - door[0]) * (x - door[0])
                         + (y - door[1]) * (y - door[1]);
-                    if (distance > minimumDistance) {
-                        players.add(new int[]{x, y});
+                    if (distance > maxDistance) {
+                        maxDistance = distance;
+                        position[0] = x;
+                        position[1] = y;
                     }
                 }
             }
         }
 
-
-        int randomIndex = RandomUtils.uniform(rand, players.size());
-        position[0] = players.get(randomIndex)[0];
-        position[1] = players.get(randomIndex)[1];
         world[position[0]][position[1]] = Tileset.PLAYER;
-
         return position;
     }
 
@@ -134,27 +161,28 @@ public class Map implements Serializable {
             int[] monster = iterator.next();
             int x = monster[0];
             int y = monster[1];
-            if (world[x][y] != Tileset.MONSTER) {
-                iterator.remove();
+//            if (world[x][y] != Tileset.MONSTER) {
+//                iterator.remove();
+//            } else {
+            if ((Math.abs(player.x - x) <= 1 && player.y == y)
+                || (Math.abs(player.y - y) <= 1 && player.x == x)) {
+                world[x][y] = Tileset.FLOOR;
+                player.state = "Attack by a monster, lose 1 health.";
+                player.health--;
+                iterator.remove();  // monster is dead, remove it.
             } else {
-                if (Math.abs(player.x - x) <= 1 && Math.abs(player.y - y) <= 1) {
-                    world[x][y] = Tileset.FLOOR;
-                    player.state = "Attack by a monster, lose 1 health.";
-                    player.health--;
-                    iterator.remove();  // monster is dead, remove it.
-                } else {
-                    List<int[]> emptyNeighbors = getEmptyNeighbors(x, y);
-                    int index = RandomUtils.uniform(rand, emptyNeighbors.size());
-                    int[] target = emptyNeighbors.get(index);
-                    int targetX = target[0];
-                    int targetY = target[1];
-                    world[targetX][targetY] = Tileset.MONSTER;
-                    world[x][y] = Tileset.FLOOR;
-                    // update the monster position
-                    monster[0] = targetX;
-                    monster[1] = targetY;
-                }
+                List<int[]> emptyNeighbors = getEmptyNeighbors(x, y);
+                int index = RandomUtils.uniform(rand, emptyNeighbors.size());
+                int[] target = emptyNeighbors.get(index);
+                int targetX = target[0];
+                int targetY = target[1];
+                world[targetX][targetY] = Tileset.MONSTER;
+                world[x][y] = Tileset.FLOOR;
+                // update the monster position
+                monster[0] = targetX;
+                monster[1] = targetY;
             }
+//            }
         }
     }
 
@@ -162,18 +190,21 @@ public class Map implements Serializable {
      * init given item of given num in the map, and generate a monster around it
      * is true.
      */
-    void initItems(TETile type, int num) {
+    List<int[]> initItems(TETile type, int num) {
         int curNum = 0;
+        List<int[]> items = new ArrayList<>();
         while (curNum < num) {
             int x = RandomUtils.uniform(rand, Game.WIDTH);
             int y = RandomUtils.uniform(rand, Game.HEIGHT);
             if (world[x][y] == Tileset.FLOOR) {
                 world[x][y] = type;
                 curNum++;
+                items.add(new int[]{x, y});
                 // add monster around it
                 generateMonsterAround(x, y);
             }
         }
+        return items;
     }
 
     private List<int[]> getEmptyNeighbors(int x, int y) {
@@ -197,8 +228,29 @@ public class Map implements Serializable {
     /**
      * Show the map
      */
-    void showMap() {
-        Window.TER.renderFrame(world);
+    void showMap(Player player) {
+        visibleWorld = new TETile[Game.WIDTH][Game.HEIGHT];
+        fillWithNothing(visibleWorld);
+        List<int[]> visibleItems = new ArrayList<>();
+        visibleItems.addAll(hearts);
+        visibleItems.addAll(diamonds);
+        visibleItems.addAll(monsters);
+        visibleItems.add(door);
+
+        for (int[] visibleCenter : visibleItems) {
+            int x = visibleCenter[0];
+            int y = visibleCenter[1];
+            visibleWorld[x][y] = world[x][y];
+        }
+
+        // visible range for the player
+        int cx = player.x;
+        int cy = player.y;
+        for (int x = cx - 2; x <= cx + 2; x++) {
+            System.arraycopy(world[x], cy - 2, visibleWorld[x], cy - 2, 5);
+        }
+
+        Window.TER.renderFrame(visibleWorld);
     }
 
 }

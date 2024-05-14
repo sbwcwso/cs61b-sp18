@@ -111,8 +111,8 @@ public class Window {
         StdDraw.textLeft(2, Game.HEIGHT - 1, leftText);
 
         StringBuilder rightText = new StringBuilder();
-        if (Game.DIAMOND_NUM > 0) {
-            rightText.append(Game.DIAMOND_NUM).append(" diamonds need to be "
+        if (player.map.diamondNum() > 0) {
+            rightText.append(player.map.diamondNum()).append(" diamonds need to be "
                 + "collected.         ");
         } else {
             rightText.append("You have collected all the diamonds, go to the door to win the "

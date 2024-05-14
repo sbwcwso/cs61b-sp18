@@ -40,7 +40,7 @@ public class Game {
     private void playGame() {
         char ch;
         do {
-            player.map.showMap();
+            player.map.showMap(player);
             ch = Keyboard.getCharAndUpdateHUD(player);
             if (ch == ':') {
                 ch = Keyboard.getCharAndUpdateHUD(player);
@@ -57,11 +57,15 @@ public class Game {
                 break;
             } else {
                 Window.updateHUD(player);
+                player.map.showMap(player);
                 player.map.monstersMove(player);
                 Window.updateHUD(player);
+                if (player.health <= 0) {
+                    break;
+                }
             }
         } while (true);
-        player.map.showMap();
+        player.map.showMap(player);
         Window.endMenu(player);
     }
 
