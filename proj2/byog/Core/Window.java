@@ -58,6 +58,17 @@ public class Window {
         StdDraw.show();
     }
 
+    static boolean continueMenu() {
+        StdDraw.setFont(MIDDLE_FONT);
+        String firstLine = "Press q to exit the game.";
+        StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT / 2.0 - 2, firstLine);
+        String secondLine = "Press any other key to return the main menu.";
+        StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT / 2.0 - 4, secondLine);
+        StdDraw.show();
+
+        return Keyboard.getChar() != 'q';
+    }
+
     /**
      * game save menu
      */
@@ -74,10 +85,8 @@ public class Window {
         StdDraw.setPenColor(StdDraw.BLUE);
 
         StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT / 2.0 + 2, "Your Game Has Been Saved.");
-        StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT / 2.0 - 2, "Game Over.");
 
         StdDraw.show();
-        StdDraw.pause(2000);
     }
 
     /**
@@ -104,11 +113,18 @@ public class Window {
 
 
         StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.filledRectangle(Game.WIDTH / 2.0, Game.HEIGHT - 1, Game.WIDTH / 2.0, 1);
+        StdDraw.filledRectangle(Game.WIDTH / 2.0, Game.HEIGHT - 2, Game.WIDTH / 2.0, 2);
+        StdDraw.filledRectangle(Game.WIDTH / 2.0, 0, Game.WIDTH / 2.0, 2);
 
-        String leftText = x + ", " + y + ": " + player.map.world[x][y].description();
         StdDraw.setPenColor(StdDraw.WHITE);
-        StdDraw.textLeft(2, Game.HEIGHT - 1, leftText);
+        StdDraw.textLeft(2, Game.HEIGHT - 1,
+            String.valueOf(player.map.visibleWorld[x][y].character()));
+        StdDraw.textLeft(2, Game.HEIGHT - 2, player.map.visibleWorld[x][y].description());
+
+        // bottom line
+        StdDraw.setPenColor(StdDraw.GREEN);
+        StdDraw.textLeft(2, 1, "Press :q to save the game. Use a(←) s(↓) w(↑) d(→) to move.");
+        StdDraw.textRight(Game.WIDTH - 2, 1, "Watch out the monster, and do not hit the wall.");
 
         StringBuilder rightText = new StringBuilder();
         if (player.map.diamondNum() > 0) {
@@ -131,6 +147,10 @@ public class Window {
         String middleText = player.state;
         StdDraw.setPenColor(StdDraw.BLUE);
         StdDraw.text(Game.WIDTH / 2.0 - 10, Game.HEIGHT - 1, middleText);
+
+        StdDraw.setPenColor(StdDraw.RED);
+        StdDraw.textRight(Game.WIDTH - 2.0, Game.HEIGHT - 2, "Collect all"
+            + " the diamond and then go to the door!");
 
         StdDraw.show();
     }

@@ -234,7 +234,7 @@ public class Map implements Serializable {
         List<int[]> visibleItems = new ArrayList<>();
         visibleItems.addAll(hearts);
         visibleItems.addAll(diamonds);
-        visibleItems.addAll(monsters);
+//        visibleItems.addAll(monsters);
         visibleItems.add(door);
 
         for (int[] visibleCenter : visibleItems) {
