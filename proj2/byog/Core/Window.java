@@ -61,9 +61,9 @@ public class Window {
     static boolean continueMenu() {
         StdDraw.setFont(MIDDLE_FONT);
         String firstLine = "Press q to exit the game.";
-        StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT / 2.0 - 2, firstLine);
+        StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT / 2.0 - 3, firstLine);
         String secondLine = "Press any other key to return the main menu.";
-        StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT / 2.0 - 4, secondLine);
+        StdDraw.text(Game.WIDTH / 2.0, Game.HEIGHT / 2.0 - 5, secondLine);
         StdDraw.show();
 
         return Keyboard.getChar() != 'q';

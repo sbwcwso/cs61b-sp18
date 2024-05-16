@@ -113,7 +113,7 @@ public class Game {
                 FileInputStream fs = new FileInputStream(f);
                 ObjectInputStream os = new ObjectInputStream(fs);
                 player = (Player) os.readObject();
-                player.map.initialize();
+                player.map.reloadInitialize();
                 player.showPlayer();
                 os.close();
                 return;

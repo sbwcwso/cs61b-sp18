@@ -26,6 +26,10 @@ public class Map implements Serializable {
         this.seed = seed;
 
         initialize();
+        monsters = new ArrayList<>();
+        hearts = initItems(Tileset.HEART, Game.HEART_NUM);
+        diamonds = initItems(Tileset.DIAMOND, Game.DIAMOND_NUM);
+        generateDoor();
     }
 
     /**
@@ -35,7 +39,6 @@ public class Map implements Serializable {
 
         rand = new Random(seed);
         world = new TETile[Game.WIDTH][Game.HEIGHT];
-        monsters = new ArrayList<>();
 
         Rome.initialize(world, rand);
         // Generate Map
@@ -43,9 +46,23 @@ public class Map implements Serializable {
 
         List<Rome> romes = Rome.generateRomes(this);
         Rome.connectRomes(romes);
-        generateDoor();
-        hearts = initItems(Tileset.HEART, Game.HEART_NUM);
-        diamonds = initItems(Tileset.DIAMOND, Game.DIAMOND_NUM);
+    }
+
+    void reloadInitialize() {
+        initialize();
+        for (int[] position : hearts) {
+            world[position[0]][position[1]] = Tileset.HEART;
+        }
+
+        for (int[] position : monsters) {
+            world[position[0]][position[1]] = Tileset.MONSTER;
+        }
+
+        for (int[] position : diamonds) {
+            world[position[0]][position[1]] = Tileset.DIAMOND;
+        }
+
+        world[door[0]][door[1]] = Tileset.LOCKED_DOOR;
     }
 
     void removeMonsters(int[] position) {
@@ -161,9 +178,6 @@ public class Map implements Serializable {
             int[] monster = iterator.next();
             int x = monster[0];
             int y = monster[1];
-//            if (world[x][y] != Tileset.MONSTER) {
-//                iterator.remove();
-//            } else {
             if ((Math.abs(player.x - x) <= 1 && player.y == y)
                 || (Math.abs(player.y - y) <= 1 && player.x == x)) {
                 world[x][y] = Tileset.FLOOR;
