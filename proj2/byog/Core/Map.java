@@ -27,9 +27,9 @@ public class Map implements Serializable {
 
         initialize();
         monsters = new ArrayList<>();
+        generateDoor();
         hearts = initItems(Tileset.HEART, Game.HEART_NUM);
         diamonds = initItems(Tileset.DIAMOND, Game.DIAMOND_NUM);
-        generateDoor();
     }
 
     /**

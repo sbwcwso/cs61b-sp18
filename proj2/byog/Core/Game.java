@@ -16,7 +16,7 @@ public class Game {
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 60;
-    public static final int BLANK_DISTANCE = 2;
+    public static final int BLANK_DISTANCE = 3;
     static int DIAMOND_NUM = 5;
     static int HEART_NUM = 3;
 
@@ -154,6 +154,9 @@ public class Game {
             case 'l':
                 loadGame();
                 break;
+            case 'Q':
+            case 'q':
+                System.exit(0);
             default:
                 throw new IllegalArgumentException("Illegal input.");
         }
