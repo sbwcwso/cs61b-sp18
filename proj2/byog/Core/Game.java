@@ -157,6 +157,7 @@ public class Game {
             case 'Q':
             case 'q':
                 System.exit(0);
+                break;
             default:
                 throw new IllegalArgumentException("Illegal input.");
         }
